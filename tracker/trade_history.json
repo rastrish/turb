@@ -1,0 +1,180 @@
+{
+  "version": "1.0",
+  "week": "May 19–26, 2026",
+  "currency": "INR",
+
+  "closed_trades": [
+    {
+      "id": "T001",
+      "stock": "HINDALCO",
+      "instrument": "HINDALCO 1110 CE",
+      "strike": 1110,
+      "option_type": "CE",
+      "outcome": "WIN",
+      "pnl": 4900,
+      "sector": "metals",
+      "week": "May 19–26, 2026",
+      "rule_violations": []
+    },
+    {
+      "id": "T002",
+      "stock": "GRASIM",
+      "instrument": "GRASIM 3100 CE",
+      "strike": 3100,
+      "option_type": "CE",
+      "outcome": "WIN",
+      "pnl": 4500,
+      "sector": "conglomerate",
+      "week": "May 19–26, 2026",
+      "rule_violations": []
+    },
+    {
+      "id": "T003",
+      "stock": "VEDANTA",
+      "instrument": "VEDANTA 360 CE",
+      "strike": 360,
+      "option_type": "CE",
+      "outcome": "WIN",
+      "pnl": 2415,
+      "sector": "metals",
+      "week": "May 19–26, 2026",
+      "rule_violations": []
+    },
+    {
+      "id": "T004",
+      "stock": "CDSL",
+      "instrument": "CDSL 1220 CE",
+      "strike": 1220,
+      "option_type": "CE",
+      "outcome": "WIN",
+      "pnl": 2660,
+      "sector": "financial_services",
+      "week": "May 19–26, 2026",
+      "rule_violations": []
+    },
+    {
+      "id": "T005",
+      "stock": "TATAMOTORS",
+      "instrument": "TATAMOTORS 400 CE",
+      "strike": 400,
+      "option_type": "CE",
+      "outcome": "WIN",
+      "pnl": 280,
+      "sector": "auto",
+      "week": "May 19–26, 2026",
+      "rule_violations": []
+    },
+    {
+      "id": "T006",
+      "stock": "VEDANTA",
+      "instrument": "VEDANTA 350 CE",
+      "strike": 350,
+      "option_type": "CE",
+      "outcome": "WIN",
+      "pnl": 1955,
+      "sector": "metals",
+      "week": "May 19–26, 2026",
+      "rule_violations": []
+    },
+    {
+      "id": "T007",
+      "stock": "BDL",
+      "instrument": "BDL 1460 CE",
+      "strike": 1460,
+      "option_type": "CE",
+      "outcome": "LOSS",
+      "pnl": -12862,
+      "sector": "defence",
+      "week": "May 19–26, 2026",
+      "rule_violations": [
+        {
+          "rule_id": 16,
+          "rule_name": "Max Loss Per Trade",
+          "description": "Loss of ₹12,862 exceeds ₹5,000 max loss per trade",
+          "severity": "CRITICAL"
+        }
+      ],
+      "notes": "⚠️ Loss exceeded max per-trade limit of ₹5,000 — review SL placement"
+    },
+    {
+      "id": "T008",
+      "stock": "SOLARINDS",
+      "instrument": "SOLARINDS 19000 CE",
+      "strike": 19000,
+      "option_type": "CE",
+      "outcome": "LOSS",
+      "pnl": -6950,
+      "sector": "solar",
+      "week": "May 19–26, 2026",
+      "rule_violations": [
+        {
+          "rule_id": 16,
+          "rule_name": "Max Loss Per Trade",
+          "description": "Loss of ₹6,950 exceeds ₹5,000 max loss per trade",
+          "severity": "CRITICAL"
+        }
+      ],
+      "notes": "⚠️ Loss exceeded max per-trade limit — high lot premium stock, check premium before entry"
+    },
+    {
+      "id": "T009",
+      "stock": "BAJAJ AUTO",
+      "instrument": "BAJAJ AUTO 10800 CE",
+      "strike": 10800,
+      "option_type": "CE",
+      "outcome": "LOSS",
+      "pnl": -6225,
+      "sector": "auto",
+      "week": "May 19–26, 2026",
+      "rule_violations": [
+        {
+          "rule_id": 16,
+          "rule_name": "Max Loss Per Trade",
+          "description": "Loss of ₹6,225 exceeds ₹5,000 max loss per trade",
+          "severity": "CRITICAL"
+        }
+      ],
+      "notes": "⚠️ Loss exceeded max per-trade limit — high-premium stock, lot value too large"
+    },
+    {
+      "id": "T010",
+      "stock": "TORNTPHARM",
+      "instrument": "TORNTPHARM 4900 CE",
+      "strike": 4900,
+      "option_type": "CE",
+      "outcome": "LOSS",
+      "pnl": -3750,
+      "sector": "pharma",
+      "week": "May 19–26, 2026",
+      "rule_violations": []
+    },
+    {
+      "id": "T011",
+      "stock": "GAIL",
+      "instrument": "GAIL 180 CE",
+      "strike": 180,
+      "option_type": "CE",
+      "outcome": "LOSS",
+      "pnl": -2205,
+      "sector": "energy",
+      "week": "May 19–26, 2026",
+      "rule_violations": []
+    }
+  ],
+
+  "weekly_summary": {
+    "total_trades": 11,
+    "winners": 6,
+    "losers": 5,
+    "win_rate_pct": 54.5,
+    "gross_profit": 16710,
+    "gross_loss": -31992,
+    "net_pnl": -15282,
+    "average_winner": 2785,
+    "average_loser": -6398,
+    "largest_winner": 4900,
+    "largest_loser": -12862,
+    "critical_violations": 3,
+    "observation": "Win rate is decent at 54.5% but average loser (₹6,398) is 2.3x average winner (₹2,785). The 3 trades that violated the ₹5,000 max-loss rule caused ₹26,037 in losses alone. Strict SL discipline is the single biggest fix."
+  }
+}

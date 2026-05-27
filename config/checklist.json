@@ -1,0 +1,113 @@
+{
+  "version": "1.0",
+  "description": "11-point entry checklist — ALL must pass for entry",
+  "pass_threshold": "ALL_11",
+
+  "checks": [
+    {
+      "id": 1,
+      "name": "New Contracts",
+      "field": "new_contracts",
+      "operator": ">=",
+      "value": 200,
+      "display": "New contracts > 200",
+      "mandatory": true
+    },
+    {
+      "id": 2,
+      "name": "OI Direction",
+      "field": "oi_direction",
+      "operator": "==",
+      "value": "BUILDING",
+      "display": "OI direction: Building ✅",
+      "mandatory": true
+    },
+    {
+      "id": 3,
+      "name": "Volume vs Average",
+      "field": "volume_ratio",
+      "operator": ">=",
+      "value": 2.0,
+      "display": "Stock volume > 2x average",
+      "mandatory": true
+    },
+    {
+      "id": 4,
+      "name": "Price Direction",
+      "field": "price_change_pct",
+      "operator": ">",
+      "value": 0,
+      "display": "Price direction: Up ✅",
+      "mandatory": true
+    },
+    {
+      "id": 5,
+      "name": "PCR",
+      "field": "pcr",
+      "operator": ">=",
+      "value": 0.75,
+      "display": "PCR >= 0.75",
+      "mandatory": true
+    },
+    {
+      "id": 6,
+      "name": "Time Window",
+      "field": "current_time",
+      "operator": "between",
+      "value": ["10:00", "11:30"],
+      "display": "Time: 10:00–11:30 AM",
+      "mandatory": true
+    },
+    {
+      "id": 7,
+      "name": "Not At Day High",
+      "field": "near_day_high",
+      "operator": "==",
+      "value": false,
+      "display": "Not at day high",
+      "mandatory": true
+    },
+    {
+      "id": 8,
+      "name": "Capital Per Position",
+      "field": "required_capital",
+      "operator": "<=",
+      "value": 25000,
+      "display": "Capital < ₹25,000 per position",
+      "mandatory": true
+    },
+    {
+      "id": 9,
+      "name": "Open Positions Count",
+      "field": "open_positions",
+      "operator": "<=",
+      "value": 3,
+      "display": "Positions open < 3",
+      "mandatory": true
+    },
+    {
+      "id": 10,
+      "name": "SuperTrend",
+      "field": "supertrend",
+      "operator": "==",
+      "value": "UP",
+      "display": "SuperTrend: UP",
+      "mandatory": true
+    },
+    {
+      "id": 11,
+      "name": "RSI",
+      "field": "rsi",
+      "operator": "between",
+      "value": [45, 70],
+      "display": "RSI: 45–70",
+      "mandatory": true
+    }
+  ],
+
+  "scoring": {
+    "all_pass": "ENTER",
+    "1_fail": "REVIEW — identify which rule failed",
+    "2_plus_fail": "SKIP — do not trade"
+  }
+}

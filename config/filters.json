@@ -1,0 +1,130 @@
+{
+  "version": "1.0",
+  "description": "Auto-reject filters — any ONE triggers instant SKIP",
+  "logic": "ANY_MATCH_REJECTS",
+
+  "filters": [
+    {
+      "id": 1,
+      "name": "Low PCR",
+      "field": "pcr",
+      "operator": "<",
+      "value": 0.75,
+      "reason": "Bearish sentiment — put writers not active enough",
+      "action": "REJECT"
+    },
+    {
+      "id": 2,
+      "name": "SuperTrend Down",
+      "field": "supertrend",
+      "operator": "==",
+      "value": "DOWN",
+      "reason": "Trend is bearish — CE entries not valid",
+      "action": "REJECT"
+    },
+    {
+      "id": 3,
+      "name": "Insufficient New Contracts",
+      "field": "new_contracts",
+      "operator": "<",
+      "value": 200,
+      "reason": "Not enough fresh OI to confirm conviction",
+      "action": "REJECT"
+    },
+    {
+      "id": 4,
+      "name": "Premium Spike > 30%",
+      "field": "premium_change_pct",
+      "operator": ">",
+      "value": 30,
+      "reason": "Premium up >30% today — wait for pullback before entry",
+      "action": "REJECT",
+      "note": "Reassess after pullback"
+    },
+    {
+      "id": 5,
+      "name": "Large Lot Size",
+      "field": "lot_size",
+      "operator": ">",
+      "value": 2500,
+      "reason": "Very large lot size — capital risk per lot is high",
+      "action": "REJECT",
+      "note": "Manual review required — check margin carefully"
+    },
+    {
+      "id": 6,
+      "name": "Gap Down Before 9:45 AM",
+      "field": "gap_down_before_945",
+      "operator": "==",
+      "value": true,
+      "reason": "Gap down opening — market unstable before 9:45 AM",
+      "action": "REJECT",
+      "reassess_after": "09:45"
+    },
+    {
+      "id": 7,
+      "name": "Daily Loss Limit Hit",
+      "field": "daily_loss",
+      "operator": ">=",
+      "value": 5000,
+      "reason": "Daily max loss of ₹5,000 hit — STOP ALL TRADING",
+      "action": "HALT_ALL_TRADING",
+      "mandatory": true
+    },
+    {
+      "id": 8,
+      "name": "Too Early",
+      "field": "current_time",
+      "operator": "<",
+      "value": "10:00",
+      "reason": "Before ideal entry window (10:00 AM)",
+      "action": "REJECT",
+      "hard_cutoff": "09:30"
+    },
+    {
+      "id": 9,
+      "name": "Too Late",
+      "field": "current_time",
+      "operator": ">",
+      "value": "14:30",
+      "reason": "After 2:30 PM cutoff — no new intraday entries",
+      "action": "REJECT",
+      "exception": "BTST trades only"
+    }
+  ],
+
+  "warnings": [
+    {
+      "id": "W1",
+      "name": "Daily Loss Warning",
+      "field": "daily_loss",
+      "operator": ">=",
+      "value": 3500,
+      "message": "⚠️ Daily loss approaching ₹5,000 limit — trade with caution"
+    },
+    {
+      "id": "W2",
+      "name": "Position Count Warning",
+      "field": "open_positions",
+      "operator": "==",
+      "value": 3,
+      "message": "⚠️ At max positions (3) — no new entries until one closes"
+    },
+    {
+      "id": "W3",
+      "name": "Large Lot Caution",
+      "field": "lot_size",
+      "operator": ">=",
+      "value": 2000,
+      "message": "⚠️ Lot size >= 2,000 — verify capital and margin carefully"
+    },
+    {
+      "id": "W4",
+      "name": "Time Window Warning",
+      "field": "current_time",
+      "operator": ">",
+      "value": "11:30",
+      "message": "⚠️ Outside ideal 10:00–11:30 AM window — lower conviction entries"
+    }
+  ]
+}

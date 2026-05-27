@@ -1,0 +1,208 @@
+{
+  "version": "1.0",
+  "expiry": "June 30, 2026",
+  "capital_per_trade_max": 25000,
+  "currency": "INR",
+
+  "rules": {
+    "entry_rules": [
+      {
+        "id": 1,
+        "name": "Triple Confirmation",
+        "description": "OI + Price + PCR must ALL align before entry",
+        "mandatory": true,
+        "check": "oi_buildup AND price_up AND pcr_above_threshold"
+      },
+      {
+        "id": 2,
+        "name": "Minimum New Contracts",
+        "description": "Minimum 200 new contracts — check absolute numbers, not just %",
+        "mandatory": true,
+        "threshold": 200,
+        "check": "new_contracts >= 200"
+      },
+      {
+        "id": 3,
+        "name": "No Early Entry",
+        "description": "No entry before 9:30 AM. Best window is 10:00–11:30 AM",
+        "mandatory": true,
+        "hard_cutoff": "09:30",
+        "ideal_window_start": "10:00",
+        "ideal_window_end": "11:30"
+      },
+      {
+        "id": 4,
+        "name": "No Day High Entry",
+        "description": "Never enter at day high — wait for pullback",
+        "mandatory": true,
+        "check": "current_price < day_high"
+      },
+      {
+        "id": 5,
+        "name": "Gap Down Wait",
+        "description": "Gap down open = wait 30 minutes before CE entries",
+        "mandatory": true,
+        "wait_minutes": 30,
+        "check": "if gap_down then time >= open_time + 30min"
+      },
+      {
+        "id": 6,
+        "name": "Expiry Preference",
+        "description": "June expiry preferred over May. Last week of May = avoid May options",
+        "mandatory": true,
+        "preferred_expiry": "June",
+        "avoid_may_after": "last_week_of_may"
+      }
+    ],
+
+    "position_management": [
+      {
+        "id": 7,
+        "name": "Immediate SL Exit",
+        "description": "SL hit = exit immediately, no hope trading",
+        "mandatory": true,
+        "action": "MARKET_EXIT_ON_SL_HIT"
+      },
+      {
+        "id": 8,
+        "name": "1 Lot Book at T1",
+        "description": "1 lot = book at T1, no trailing",
+        "mandatory": true,
+        "lot_count": 1,
+        "action": "FULL_EXIT_AT_T1"
+      },
+      {
+        "id": 9,
+        "name": "Max Concurrent Positions",
+        "description": "Max 2–3 positions at a time",
+        "mandatory": true,
+        "max_positions": 3
+      },
+      {
+        "id": 10,
+        "name": "Daily Max Loss",
+        "description": "Daily max loss = ₹5,000 — stop all trading if hit",
+        "mandatory": true,
+        "daily_max_loss": 5000,
+        "action": "HALT_ALL_TRADING"
+      },
+      {
+        "id": 11,
+        "name": "PCR First 15 Min Rule",
+        "description": "Don't exit June positions based on PCR in first 15 mins — wait 30 mins for trend confirmation",
+        "mandatory": true,
+        "wait_minutes": 30
+      }
+    ],
+
+    "oi_analysis": [
+      {
+        "id": 12,
+        "name": "Long Buildup Signal",
+        "description": "Fresh OI + price up = long buildup = bullish ✅",
+        "mandatory": true,
+        "signal": "fresh_oi_addition AND price_up => BULLISH"
+      },
+      {
+        "id": 13,
+        "name": "PCR + CE OI Double Confirm",
+        "description": "PCR + CE OI must BOTH confirm. PCR from put writing ≠ CE buyers active",
+        "mandatory": true,
+        "check": "pcr_bullish AND ce_oi_buildup"
+      },
+      {
+        "id": 14,
+        "name": "Sector OI Correlation",
+        "description": "Check sector OI correlation before entry",
+        "mandatory": false,
+        "sectors": ["energy", "metals", "pharma", "banking", "IT"]
+      },
+      {
+        "id": 15,
+        "name": "No Deep OTM to Expiry",
+        "description": "Never carry deep OTM to last day of expiry",
+        "mandatory": true,
+        "action": "EXIT_DEEP_OTM_BEFORE_LAST_DAY"
+      }
+    ],
+
+    "capital_rules": [
+      {
+        "id": 16,
+        "name": "Max Loss Per Trade",
+        "description": "Max loss per trade = ₹5,000",
+        "mandatory": true,
+        "max_loss_per_trade": 5000
+      },
+      {
+        "id": 17,
+        "name": "Lot Size Check",
+        "description": "Lot size > 2,000 = proceed carefully",
+        "mandatory": true,
+        "caution_threshold": 2000,
+        "check": "if lot_size > 2000 then extra_caution"
+      },
+      {
+        "id": 18,
+        "name": "SL Cooldown",
+        "description": "Wait 30 minutes after SL hit before redeploying capital",
+        "mandatory": true,
+        "cooldown_minutes": 30
+      },
+      {
+        "id": 19,
+        "name": "Best Entry Window",
+        "description": "Best entry window = 10:00–11:30 AM",
+        "mandatory": false,
+        "window_start": "10:00",
+        "window_end": "11:30"
+      },
+      {
+        "id": 20,
+        "name": "No Late Trades",
+        "description": "No new trades after 2:30 PM (BTST exception only)",
+        "mandatory": true,
+        "cutoff_time": "14:30",
+        "exception": "BTST"
+      }
+    ],
+
+    "overnight_rules": [
+      {
+        "id": 21,
+        "name": "No Weekly Options Carry",
+        "description": "Never carry weekly options over weekend",
+        "mandatory": true,
+        "action": "EXIT_WEEKLY_OPTIONS_BEFORE_FRIDAY_CLOSE"
+      },
+      {
+        "id": 22,
+        "name": "Exit May Losers by Thursday",
+        "description": "Exit all losing May positions by Thursday",
+        "mandatory": true,
+        "deadline": "Thursday",
+        "applies_to": "May_expiry_losing_positions"
+      },
+      {
+        "id": 23,
+        "name": "Geopolitical Risk Reduction",
+        "description": "Geopolitical tension = reduce overnight exposure",
+        "mandatory": true,
+        "action": "REDUCE_OVERNIGHT_POSITIONS"
+      },
+      {
+        "id": 24,
+        "name": "June Strong Position Trail",
+        "description": "June position with 30+ days + OI > 500 real contracts = don't exit on first profit, trail SL instead",
+        "mandatory": true,
+        "conditions": {
+          "days_to_expiry_min": 30,
+          "oi_min_contracts": 500,
+          "action": "TRAIL_SL_NOT_EXIT"
+        }
+      }
+    ]
+  },
+
+  "priority": "capital_preservation_always_wins_when_rules_conflict"
+}

@@ -1,0 +1,97 @@
+{
+  "version": "1.0",
+  "description": "Scanning configuration for FNO opportunity discovery",
+  "expiry": "June 30, 2026",
+  "option_type": "CE",
+
+  "data_sources": [
+    {
+      "tool": "fetch_curated_fno",
+      "categories": ["GAINERS", "TOP_TRADED"],
+      "priority": 1,
+      "description": "Primary source — curated FNO stocks with momentum"
+    },
+    {
+      "tool": "fetch_market_movers_and_trending_stocks_funds",
+      "categories": ["TOP_GAINERS", "HIGH_MOMENTUM", "VOLUME_SHOCKERS"],
+      "priority": 2,
+      "description": "Secondary source — market movers for breakout candidates"
+    }
+  ],
+
+  "shortlist_criteria": {
+    "min_price_move_pct": 1.5,
+    "description": "Only shortlist stocks with >= 1.5% intraday price move"
+  },
+
+  "technical_indicators": {
+    "supertrend": {
+      "required": "UP",
+      "period": 7,
+      "multiplier": 3
+    },
+    "rsi": {
+      "min": 45,
+      "max": 70,
+      "period": 14
+    },
+    "adx": {
+      "min_strength": 25,
+      "description": "ADX > 25 = trending market — valid for CE entries"
+    },
+    "volume": {
+      "min_ratio_vs_avg": 2.0,
+      "description": "Volume must be 2x the 20-day average"
+    }
+  },
+
+  "oi_criteria": {
+    "min_new_contracts": 200,
+    "oi_change_direction": "INCREASING",
+    "pcr_min": 0.75,
+    "ce_oi_must_build": true,
+    "description": "Fresh OI buildup with price up = long buildup signal"
+  },
+
+  "sector_rotation_check": {
+    "enabled": true,
+    "sectors": [
+      {
+        "name": "energy",
+        "stocks": ["NTPC", "POWERGRID", "JSWENERGY", "ADANIGREEN", "TATAPOWER", "TORNTPOWER", "GAIL"]
+      },
+      {
+        "name": "metals",
+        "stocks": ["HINDALCO", "VEDANTA", "JSWSTEEL", "TATASTEEL", "NMDC", "COALINDIA", "SAIL"]
+      },
+      {
+        "name": "pharma",
+        "stocks": ["CIPLA", "SUNPHARMA", "DRREDDY", "DIVISLAB", "AUROPHARMA", "TORNTPHARM", "ALKEM"]
+      },
+      {
+        "name": "banking",
+        "stocks": ["HDFCBANK", "ICICIBANK", "AXISBANK", "KOTAKBANK", "SBIN", "INDUSINDBK", "BANKBARODA"]
+      },
+      {
+        "name": "IT",
+        "stocks": ["TCS", "INFY", "WIPRO", "HCLTECH", "TECHM", "LTIM", "PERSISTENT"]
+      }
+    ],
+    "description": "Check if the sector has broad OI buildup — not just one stock"
+  },
+
+  "ranking_weights": {
+    "new_contracts": 0.30,
+    "price_move_pct": 0.20,
+    "volume_ratio": 0.20,
+    "pcr": 0.15,
+    "rsi_in_zone": 0.10,
+    "sector_oi_support": 0.05
+  },
+
+  "output": {
+    "max_trade_cards": 5,
+    "format": "TRADE_CARD",
+    "include_rule_violations_check": true
+  }
+}
