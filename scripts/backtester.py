@@ -531,6 +531,9 @@ if __name__ == "__main__":
     parser.add_argument("--min-move", type=float, default=1.5, help="Min price move %% to trigger (default 1.5)")
     parser.add_argument("--hold-days", type=int, default=5, help="Max holding days (default 5)")
     parser.add_argument("--otm-pct", type=float, default=0.02, help="OTM %% for strike (default 0.02)")
+    parser.add_argument("--volume-mult", type=float, default=2.0, help="Volume multiplier threshold (default 2.0)")
+    parser.add_argument("--rsi-min", type=float, default=45.0, help="RSI lower bound (default 45)")
+    parser.add_argument("--rsi-max", type=float, default=70.0, help="RSI upper bound (default 70)")
     parser.add_argument("--compare", nargs="+", help="Compare multiple symbols (needs lot sizes too)")
     args = parser.parse_args()
 
@@ -540,6 +543,9 @@ if __name__ == "__main__":
         min_price_move_pct=args.min_move,
         max_holding_days=args.hold_days,
         strike_otm_pct=args.otm_pct,
+        volume_multiplier=args.volume_mult,
+        rsi_min=args.rsi_min,
+        rsi_max=args.rsi_max,
     )
 
     results = run_backtest(args.symbol.upper(), config)
