@@ -23,12 +23,49 @@
       },
       {
         "id": 3,
-        "name": "No Early Entry",
-        "description": "No entry before 9:30 AM. Best window is 10:00–11:30 AM",
+        "name": "Time-Based Entry Rules",
+        "description": "Entry requirements vary by time of day — 7 distinct windows",
         "mandatory": true,
-        "hard_cutoff": "09:30",
-        "ideal_window_start": "10:00",
-        "ideal_window_end": "11:30"
+        "windows": [
+          {
+            "time": "before 09:30",
+            "action": "NO_ENTRY",
+            "description": "No entry ever before 9:30 AM"
+          },
+          {
+            "time": "09:30 exactly",
+            "action": "STRONG_SIGNALS_ONLY",
+            "description": "At open — strong signals only",
+            "conditions": { "min_new_contracts": 500, "min_pcr": 0.85, "price_moving_strongly": true }
+          },
+          {
+            "time": "09:30–10:00",
+            "action": "STRONG_SIGNALS_ONLY",
+            "description": "Pre-ideal window — strong signals only",
+            "conditions": { "min_new_contracts": 500, "min_pcr": 0.85, "price_moving_strongly": true }
+          },
+          {
+            "time": "10:00–11:30",
+            "action": "ALL_SIGNALS",
+            "description": "Best window — all valid signals welcome"
+          },
+          {
+            "time": "11:30–15:00",
+            "action": "GOOD_SIGNALS",
+            "description": "Good signals welcome — apply full 11-point checklist"
+          },
+          {
+            "time": "15:00–15:15",
+            "action": "BTST_ONLY",
+            "description": "BTST only — June expiry + OI >500 contracts + breakout + not at day high",
+            "conditions": { "expiry": "June", "min_oi_contracts": 500, "breakout": true, "not_at_day_high": true }
+          },
+          {
+            "time": "after 15:15",
+            "action": "NO_ENTRY",
+            "description": "No entry ever after 3:15 PM"
+          }
+        ]
       },
       {
         "id": 4,
@@ -39,11 +76,15 @@
       },
       {
         "id": 5,
-        "name": "Gap Down Wait",
-        "description": "Gap down open = wait 30 minutes before CE entries",
+        "name": "Gap Down Protocol",
+        "description": "Gap down open requires all 3 conditions before any CE entry",
         "mandatory": true,
-        "wait_minutes": 30,
-        "check": "if gap_down then time >= open_time + 30min"
+        "conditions": [
+          { "condition": "wait_until", "value": "09:45", "description": "Wait till 9:45 AM minimum" },
+          { "condition": "nifty_recovery", "value": true, "description": "Nifty must show recovery before any entry" },
+          { "condition": "pcr_min", "value": 0.75, "description": "PCR must be >0.75 before entering after gap down" }
+        ],
+        "check": "if gap_down then time >= 09:45 AND nifty_recovering AND pcr > 0.75"
       },
       {
         "id": 6,
@@ -160,9 +201,11 @@
       {
         "id": 20,
         "name": "No Late Trades",
-        "description": "No new trades after 2:30 PM (BTST exception only)",
+        "description": "No new trades after 3:15 PM. BTST window is 3:00–3:15 PM for June expiry only.",
         "mandatory": true,
-        "cutoff_time": "14:30",
+        "cutoff_time": "15:15",
+        "btst_window": { "start": "15:00", "end": "15:15" },
+        "btst_conditions": { "expiry": "June", "min_oi_contracts": 500, "breakout": true, "not_at_day_high": true },
         "exception": "BTST"
       }
     ],
@@ -193,12 +236,14 @@
       {
         "id": 24,
         "name": "June Strong Position Trail",
-        "description": "June position with 30+ days + OI > 500 real contracts = don't exit on first profit, trail SL instead",
+        "description": "When June position has 30+ days left AND OI >500 real contracts = don't exit on first profit. Trail SL to entry price instead. Book only at T1.",
         "mandatory": true,
         "conditions": {
           "days_to_expiry_min": 30,
           "oi_min_contracts": 500,
-          "action": "TRAIL_SL_NOT_EXIT"
+          "action": "TRAIL_SL_TO_ENTRY_PRICE",
+          "book_at": "T1_ONLY",
+          "note": "Do not exit on first profit — trail SL to entry price and hold for T1"
         }
       }
     ]

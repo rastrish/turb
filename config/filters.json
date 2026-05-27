@@ -53,13 +53,17 @@
     },
     {
       "id": 6,
-      "name": "Gap Down Before 9:45 AM",
-      "field": "gap_down_before_945",
+      "name": "Gap Down Protocol Incomplete",
+      "field": "gap_down_conditions_met",
       "operator": "==",
-      "value": true,
-      "reason": "Gap down opening — market unstable before 9:45 AM",
+      "value": false,
+      "reason": "Gap down open — all 3 conditions must be met: (1) wait till 9:45 AM, (2) Nifty showing recovery, (3) PCR >0.75",
       "action": "REJECT",
-      "reassess_after": "09:45"
+      "conditions_required": [
+        "time >= 09:45",
+        "nifty_recovery == true",
+        "pcr > 0.75"
+      ]
     },
     {
       "id": 7,
@@ -73,23 +77,22 @@
     },
     {
       "id": 8,
-      "name": "Too Early",
+      "name": "Before Market Hours",
       "field": "current_time",
       "operator": "<",
-      "value": "10:00",
-      "reason": "Before ideal entry window (10:00 AM)",
-      "action": "REJECT",
-      "hard_cutoff": "09:30"
+      "value": "09:30",
+      "reason": "Before 9:30 AM — no entry ever, hard rule",
+      "action": "REJECT"
     },
     {
       "id": 9,
-      "name": "Too Late",
+      "name": "After Market Cutoff",
       "field": "current_time",
       "operator": ">",
-      "value": "14:30",
-      "reason": "After 2:30 PM cutoff — no new intraday entries",
+      "value": "15:15",
+      "reason": "After 3:15 PM — no entry ever, hard rule",
       "action": "REJECT",
-      "exception": "BTST trades only"
+      "note": "BTST window is 3:00–3:15 PM for June expiry only — handled by time-window check"
     }
   ],
 
@@ -124,7 +127,23 @@
       "field": "current_time",
       "operator": ">",
       "value": "11:30",
-      "message": "⚠️ Outside ideal 10:00–11:30 AM window — lower conviction entries"
+      "message": "⚠️ Outside ideal 10:00–11:30 AM window — good signals still valid until 3:00 PM"
+    },
+    {
+      "id": "W5",
+      "name": "Early Window Warning",
+      "field": "current_time",
+      "operator": "between",
+      "value": ["09:30", "10:00"],
+      "message": "⚠️ 9:30–10:00 AM window — strong signals only: OI >500 contracts + PCR >0.85 + strong price move"
+    },
+    {
+      "id": "W6",
+      "name": "BTST Window Warning",
+      "field": "current_time",
+      "operator": "between",
+      "value": ["15:00", "15:15"],
+      "message": "⚠️ BTST window (3:00–3:15 PM) — June expiry only, OI >500 contracts, breakout, not at day high"
     }
   ]
 }

@@ -53,9 +53,16 @@
       "id": 6,
       "name": "Time Window",
       "field": "current_time",
-      "operator": "between",
-      "value": ["10:00", "11:30"],
-      "display": "Time: 10:00–11:30 AM",
+      "operator": "tiered",
+      "windows": {
+        "before_0930":   { "action": "REJECT",       "label": "NO ENTRY — before 9:30 AM" },
+        "0930_to_1000":  { "action": "STRONG_ONLY",  "label": "Strong signals only (OI >500, PCR >0.85)" },
+        "1000_to_1130":  { "action": "PASS",         "label": "Best window ✅" },
+        "1130_to_1500":  { "action": "PASS",         "label": "Good signals window" },
+        "1500_to_1515":  { "action": "BTST_ONLY",    "label": "BTST only (June + OI >500 + breakout)" },
+        "after_1515":    { "action": "REJECT",       "label": "NO ENTRY — after 3:15 PM" }
+      },
+      "display": "Time: per Rule 3 windows",
       "mandatory": true
     },
     {

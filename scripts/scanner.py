@@ -26,10 +26,19 @@ MAX_DAILY_LOSS = 5_000
 MAX_POSITIONS = 3
 MIN_NEW_CONTRACTS = 200
 MIN_PCR = 0.75
-IDEAL_WINDOW_START = dtime(10, 0)
-IDEAL_WINDOW_END = dtime(11, 30)
+# Hard boundaries — no entry ever outside these
 HARD_START = dtime(9, 30)
-HARD_STOP = dtime(14, 30)
+HARD_STOP = dtime(15, 15)
+# Named windows per Rule 3
+EARLY_WINDOW_END = dtime(10, 0)        # 9:30–10:00 = strong signals only
+IDEAL_WINDOW_START = dtime(10, 0)      # 10:00–11:30 = best window
+IDEAL_WINDOW_END = dtime(11, 30)
+GOOD_WINDOW_END = dtime(15, 0)         # 11:30–15:00 = good signals
+BTST_WINDOW_START = dtime(15, 0)       # 15:00–15:15 = BTST only
+BTST_WINDOW_END = dtime(15, 15)
+# Strong-signal thresholds for the 9:30–10:00 early window
+EARLY_MIN_CONTRACTS = 500
+EARLY_MIN_PCR = 0.85
 
 
 @dataclass
@@ -121,14 +130,29 @@ def now_time() -> dtime:
     return datetime.now().time().replace(second=0, microsecond=0)
 
 
+def get_time_window(t: dtime | None = None) -> str:
+    """Returns the current time window label per Rule 3."""
+    t = t or now_time()
+    if t < HARD_START:
+        return "NO_ENTRY_PRE_MARKET"
+    if t < EARLY_WINDOW_END:
+        return "STRONG_SIGNALS_ONLY"     # 9:30–10:00
+    if t <= IDEAL_WINDOW_END:
+        return "IDEAL"                   # 10:00–11:30
+    if t < BTST_WINDOW_START:
+        return "GOOD"                    # 11:30–15:00
+    if t <= BTST_WINDOW_END:
+        return "BTST_ONLY"              # 15:00–15:15
+    return "NO_ENTRY_AFTER_CLOSE"
+
+
 def in_ideal_window() -> bool:
-    t = now_time()
-    return IDEAL_WINDOW_START <= t <= IDEAL_WINDOW_END
+    return get_time_window() == "IDEAL"
 
 
 def in_valid_window() -> bool:
-    t = now_time()
-    return HARD_START <= t <= HARD_STOP
+    w = get_time_window()
+    return w not in ("NO_ENTRY_PRE_MARKET", "NO_ENTRY_AFTER_CLOSE")
 
 
 def run_filters(stock: StockData, daily_loss: float, open_positions: int) -> tuple[bool, list[str]]:
@@ -154,10 +178,11 @@ def run_filters(stock: StockData, daily_loss: float, open_positions: int) -> tup
         rejections.append(f"Daily loss ₹{daily_loss:,.0f} >= ₹5,000 limit — HALT ALL TRADING")
 
     t = now_time()
-    if t < HARD_START:
-        rejections.append(f"Time {t.strftime('%H:%M')} — market not open yet (cutoff 9:30 AM)")
-    elif t > HARD_STOP:
-        rejections.append(f"Time {t.strftime('%H:%M')} — after 2:30 PM cutoff")
+    window = get_time_window(t)
+    if window == "NO_ENTRY_PRE_MARKET":
+        rejections.append(f"Time {t.strftime('%H:%M')} — before 9:30 AM, no entry ever")
+    elif window == "NO_ENTRY_AFTER_CLOSE":
+        rejections.append(f"Time {t.strftime('%H:%M')} — after 3:15 PM, no entry ever")
 
     return len(rejections) > 0, rejections
 
@@ -172,13 +197,25 @@ def run_checklist(stock: StockData, daily_loss: float, open_positions: int) -> C
     required_capital = stock.premium * stock.lot_size
     near_day_high = stock.ltp >= stock.day_high * 0.995
 
+    window = get_time_window(t)
+    # Time check: IDEAL and GOOD windows pass outright.
+    # STRONG_SIGNALS_ONLY (9:30–10:00) passes only if OI >500 AND PCR >0.85.
+    # BTST_ONLY passes only when checking separately — treated as fail here
+    # (scanner handles BTST as a separate path, not part of the standard 11-point run).
+    if window == "IDEAL" or window == "GOOD":
+        time_check = True
+    elif window == "STRONG_SIGNALS_ONLY":
+        time_check = stock.new_contracts >= EARLY_MIN_CONTRACTS and stock.pcr >= EARLY_MIN_PCR
+    else:
+        time_check = False  # BTST_ONLY or hard boundaries
+
     check_map = {
         "new_contracts >= 200": stock.new_contracts >= MIN_NEW_CONTRACTS,
         "oi_direction: BUILDING": stock.ce_oi_change > 0,
         "volume > 2x avg": volume_ratio >= 2.0,
         "price direction: UP": price_change_pct > 0,
         "PCR >= 0.75": stock.pcr >= MIN_PCR,
-        "time 10:00-11:30": IDEAL_WINDOW_START <= t <= IDEAL_WINDOW_END,
+        f"time window ({window})": time_check,
         "not at day high": not near_day_high,
         "capital < ₹25K": required_capital <= MAX_CAPITAL_PER_TRADE,
         "positions < 3": open_positions < MAX_POSITIONS,
@@ -196,8 +233,12 @@ def run_checklist(stock: StockData, daily_loss: float, open_positions: int) -> C
 
     if daily_loss >= MAX_DAILY_LOSS * 0.70:
         warnings.append(f"⚠️ Daily loss ₹{daily_loss:,.0f} approaching ₹5,000 limit")
-    if not in_ideal_window():
-        warnings.append(f"⚠️ Time {t.strftime('%H:%M')} is outside ideal 10:00–11:30 window")
+    if window == "STRONG_SIGNALS_ONLY":
+        warnings.append(f"⚠️ Early window (9:30–10:00) — requires OI >500 + PCR >0.85 + strong move")
+    elif window == "GOOD":
+        warnings.append(f"⚠️ Time {t.strftime('%H:%M')} — outside ideal 10:00–11:30 window (good signals still valid)")
+    elif window == "BTST_ONLY":
+        warnings.append(f"⚠️ BTST window — June expiry + OI >500 + breakout + not at day high required")
     if stock.lot_size >= 2000:
         warnings.append(f"⚠️ Lot size {stock.lot_size} >= 2,000 — verify margin carefully")
     if open_positions >= MAX_POSITIONS:
@@ -370,7 +411,7 @@ def scan_all(stock_list: list[dict]) -> str:
         f"\n{'='*55}",
         f"  FNO SCANNER — {datetime.now().strftime('%d %b %Y %H:%M')}",
         f"  Daily loss so far: ₹{daily_loss:,.0f}  |  Open positions: {open_positions}",
-        f"  Time window: {'✅ IDEAL' if in_ideal_window() else '⚠️  OUTSIDE IDEAL'} ({t.strftime('%H:%M')})",
+        f"  Time window: {get_time_window(t)} ({t.strftime('%H:%M')})",
         f"{'='*55}",
     ]
 
@@ -432,7 +473,9 @@ def check_rule_violations_now() -> str:
         violations.append(f"🚨 CRITICAL: {open_count} positions open — max is {MAX_POSITIONS}")
 
     if t > HARD_STOP:
-        warnings.append(f"⚠️ Time is {t.strftime('%H:%M')} — past 2:30 PM cutoff for new entries")
+        warnings.append(f"⚠️ Time is {t.strftime('%H:%M')} — past 3:15 PM, no new entries ever")
+    elif BTST_WINDOW_START <= t <= BTST_WINDOW_END:
+        warnings.append(f"⚠️ BTST window — June expiry + OI >500 + breakout + not at day high required")
 
     for pos in positions.get("open_positions", []):
         for v in pos.get("rule_violations", []):

@@ -99,12 +99,12 @@
       "rule_violations": [
         {
           "rule_id": 3,
-          "rule_name": "No Early Entry",
-          "description": "Entered before 10:00 AM — violates ideal entry window",
-          "severity": "WARNING"
+          "rule_name": "Time-Based Entry Rules",
+          "description": "Entered before 9:30 AM — violates hard no-entry cutoff (Rule 3)",
+          "severity": "CRITICAL"
         }
       ],
-      "notes": "⚠️ RULE VIOLATION: Entered before 10 AM. Monitor closely."
+      "notes": "⚠️ RULE VIOLATION: Entered before 9:30 AM hard cutoff. Monitor closely."
     }
   ],
   "summary": {
