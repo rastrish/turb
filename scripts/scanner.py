@@ -6,10 +6,12 @@ Usage: Run interactively via Claude Code, or call scan_all() directly
 from __future__ import annotations
 import json
 import os
-from datetime import datetime, time as dtime
+from datetime import datetime, time as dtime, timezone, timedelta
 from dataclasses import dataclass, field
 from typing import Optional
 from pathlib import Path
+
+IST = timezone(timedelta(hours=5, minutes=30))
 
 ROOT = Path(__file__).parent.parent
 CONFIG_DIR = ROOT / "config"
@@ -127,7 +129,7 @@ def get_daily_loss() -> float:
 
 
 def now_time() -> dtime:
-    return datetime.now().time().replace(second=0, microsecond=0)
+    return datetime.now(IST).time().replace(second=0, microsecond=0)
 
 
 def get_time_window(t: dtime | None = None) -> str:

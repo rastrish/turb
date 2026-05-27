@@ -6,8 +6,10 @@ Usage: Run interactively via Claude Code commands listed in README.md
 
 from __future__ import annotations
 import json
-from datetime import datetime, date
+from datetime import datetime, date, timezone, timedelta
 from pathlib import Path
+
+IST = timezone(timedelta(hours=5, minutes=30))
 from typing import Optional
 
 ROOT = Path(__file__).parent.parent
@@ -37,7 +39,7 @@ def load_history() -> dict:
 
 
 def get_today_str() -> str:
-    return date.today().isoformat()
+    return datetime.now(IST).date().isoformat()
 
 
 def show_today_pnl() -> str:
@@ -45,7 +47,7 @@ def show_today_pnl() -> str:
     positions = load_positions()
     history = load_history()
     today = get_today_str()
-    lines = [f"\n{'='*55}", f"  TODAY'S P&L — {datetime.now().strftime('%d %b %Y %H:%M')}", f"{'='*55}"]
+    lines = [f"\n{'='*55}", f"  TODAY'S P&L — {datetime.now(IST).strftime('%d %b %Y %H:%M')}", f"{'='*55}"]
 
     # Realized P&L from today's closed trades
     realized = 0.0
@@ -321,7 +323,7 @@ def check_rule_violations() -> str:
             icon = "🚨 CRITICAL" if v.get("severity") == "CRITICAL" else "⚠️ WARNING"
             violations.append(f"{icon} {sym} — {v['description']}")
 
-    lines = [f"\n{'='*55}", f"  RULE VIOLATION CHECK — {datetime.now().strftime('%d %b %Y %H:%M')}", f"{'='*55}"]
+    lines = [f"\n{'='*55}", f"  RULE VIOLATION CHECK — {datetime.now(IST).strftime('%d %b %Y %H:%M')}", f"{'='*55}"]
     if not violations and not warnings:
         lines.append("  ✅ All clear — no rule violations detected")
     else:
